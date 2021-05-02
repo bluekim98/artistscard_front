@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import axios from 'axios';
 import ItemGroup from "../components/ItemGroup";
 import Input from '../components/Input';
@@ -7,7 +7,8 @@ import Label from '../components/Label';
 import SubTitle from '../components/SubTitle';
 import Button from '../components/Button';
 
-function EditMusicView() {
+function EditMusicView({history}) {
+
     const searchInput = useRef(null);
     const [track, setTrack] = useState("");
     const [musicList, setMusicList] = useState([
@@ -32,6 +33,54 @@ function EditMusicView() {
         artist: '',
         filepath: '',
     });
+
+    const [nextMusicId, setNextMusicId] = useState(0);
+    const [previousMusicId, setPreviousMusicId] = useState(0);
+
+    useEffect(() => {
+        axios({
+            method: 'get',
+            url: `http://3.35.22.137/api/music/list`,
+        })
+        .then((response) => {
+            if(response.status === 200) {
+                setNextMusicId(response.data.nextMusicId);
+                setPreviousMusicId(response.data.previousMusicId);
+                fetchMusicList(response);
+            }
+        });
+    }, []);
+    
+    const findNextPage = () => {
+        if(musicList.length < 5) {
+            return;
+        }
+        axios({
+            method: 'get',
+            url: `http://3.35.22.137/api/music/list?id=${nextMusicId}&track=${track}`,
+        })
+        .then((response) => {
+            if(response.status === 200) {
+                setNextMusicId(response.data.nextMusicId);
+                setPreviousMusicId(response.data.previousMusicId);
+                fetchMusicList(response);
+            }
+        });
+    }
+
+    const findPreviousPage = () => {
+        axios({
+            method: 'get',
+            url: `http://3.35.22.137/api/music/list?id=${previousMusicId}&track=${track}`,
+        })
+        .then((response) => {
+            if(response.status === 200) {                
+                setNextMusicId(response.data.nextMusicId);
+                setPreviousMusicId(response.data.previousMusicId);
+                fetchMusicList(response);
+            }
+        });
+    }
 
     const setMusicObj = (e) => {
         const {value, name} = e.target;
@@ -111,20 +160,26 @@ function EditMusicView() {
         })
         .then((response) => {
             if(response.status === 200) {
-                let list = response.data.musicList.map((music)=> {
-                    return {
-                        id: music.musicId,
-                        track: music.trackName,
-                        album: music.albumName,
-                        artist: music.artistName,
-                        filepath: music.musicFilePath,
-                        createdAt: music.createdAt,
-                        updatedAt: music.updatedAt
-                    };
-                });
-                setMusicList(list);
+                setNextMusicId(response.data.nextMusicId);
+                setPreviousMusicId(response.data.previousMusicId);
+                fetchMusicList(response);
             }
         });
+    };
+
+    const fetchMusicList = (response) => {
+        let list = response.data.musicList.map((music)=> {
+            return {
+                id: music.musicId,
+                track: music.trackName,
+                album: music.albumName,
+                artist: music.artistName,
+                filepath: music.musicFilePath,
+                createdAt: music.createdAt,
+                updatedAt: music.updatedAt
+            };
+        });
+        setMusicList(list);
     };
 
     const edit = (music) => {
@@ -148,6 +203,10 @@ function EditMusicView() {
         .then((response) => {
             searchInput.current.focus();
         });
+    };
+
+    const goToIndex = () => {
+        history.push('/');
     };
 
     const ContainerStyle = {
@@ -206,6 +265,8 @@ function EditMusicView() {
                     </div>
                     :<></>
                 }
+                <Button title={"이전"} onClick={findPreviousPage} />
+                <Button title={"다음"} onClick={findNextPage} />
             </div>
             <div style={BoxStyle}>
                 <SubTitle title={"편집"} />
@@ -226,7 +287,8 @@ function EditMusicView() {
                     <Input type={"file"} name={"music"} onChange={uploadForEdit}/>
                 </div>
                 <Button type={"primary"} title={"완료"} onClick={updateTrack} />
-            </div>   
+            </div>
+            <Button type={"primary"} title={"홈화면으로"} onClick={goToIndex} />
         </div>
     )
 }

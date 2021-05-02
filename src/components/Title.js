@@ -4,11 +4,11 @@ import styled from 'styled-components';
 const StyledTitle = styled.div`
     font-size: 1.5em;
     text-align: center;
-    color: palevioletred;
+    color: #a245ff;
 `;
 const Wrapper = styled.section`
   padding: 4em;
-  background: papayawhip;
+  background: black;
 `;
 
 function Title({title}) {

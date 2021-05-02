@@ -10,26 +10,27 @@ function LoginPage({history}) {
     });
 
     const addUser = () => {
-        axios({
-            method: 'post',
-            url: 'http://3.35.22.137/api/user/login',
-            data: {
-                id: user.id,
-                password: user.password,
-            }
-        })
-        .then((response)=> {
-            if(response.status === 200) {
-                if(response.data.isValid === true) {
-                    localStorage.setItem('userId', user.id);
-                    history.push('/')
+        const url = 'http://3.35.22.137/api/user/login';
+        const data = {
+            id: user.id,
+            password: user.password,
+        }
+        const option = {
+            withCredentials: true
+        }
+        axios.post(url, data, option)
+            .then((response)=> {
+                if(response.status === 200) {
+                    if(response.data.isValid === true) {
+                        localStorage.setItem('userId', user.id);
+                        history.push('/');
+                    } else {
+                        alert(response.data.message);
+                    }
                 } else {
-                    alert(response.data.message);
+                    console.log('서버 통신 오류');
                 }
-            } else {
-                console.log('서버 통신 오류');
-            }
-        });
+            });
     };
     
     const onChange = (e) => {
