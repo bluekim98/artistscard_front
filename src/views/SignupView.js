@@ -22,7 +22,13 @@ function SignupView({history}) {
                 name: user.name
             }
         })
-        .then(()=> history.push('/login'));
+        .then((response)=> {
+            if(!response.data.isSuccess) {
+                alert(response.data.message);
+                return;
+            }
+            history.push('/login')
+        });
     };
     
     const onChange = (e) => {

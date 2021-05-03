@@ -16,7 +16,7 @@ function LoginPage({history}) {
             password: user.password,
         }
         const option = {
-            withCredentials: true
+            withCredentials: true,
         }
         axios.post(url, data, option)
             .then((response)=> {
