@@ -33,9 +33,13 @@ function EditMusicView({history}) {
         artist: '',
         filepath: '',
     });
-
-    const [nextMusicId, setNextMusicId] = useState(0);
-    const [previousMusicId, setPreviousMusicId] = useState(0);
+    
+    const [paging, setPaging] = useState({
+        nextMusicId: 0,
+        previousMusicId: 0,
+        haveNext: false,
+        havePrevious: false
+    });
 
     useEffect(() => {
         axios({
@@ -44,43 +48,41 @@ function EditMusicView({history}) {
         })
         .then((response) => {
             if(response.status === 200) {
-                setNextMusicId(response.data.nextMusicId);
-                setPreviousMusicId(response.data.previousMusicId);
+                const findedPaging = response.data.paging;
+                setPaging({
+                    ...findedPaging
+                });
                 fetchMusicList(response);
             }
         });
     }, []);
     
     const findNextPage = () => {
-        if(musicList.length < 5) {
-            return;
-        }
+        if(!paging.haveNext) return
+        findList(paging.nextMusicId);
+    }
+
+    const findPreviousPage = () => {
+        if(!paging.havePrevious) return
+        findList(paging.previousMusicId);
+    }
+
+    const findList = (musicId) => {
         axios({
             method: 'get',
-            url: `http://3.35.22.137/api/music/list?id=${nextMusicId}&track=${track}`,
+            url: `http://3.35.22.137/api/music/list?id=${musicId}&track=${track}`,
         })
         .then((response) => {
-            if(response.status === 200) {
-                setNextMusicId(response.data.nextMusicId);
-                setPreviousMusicId(response.data.previousMusicId);
+            if(response.status === 200) {                
+                const findedPaging = response.data.paging;
+                setPaging({
+                    ...findedPaging
+                });
                 fetchMusicList(response);
             }
         });
     }
 
-    const findPreviousPage = () => {
-        axios({
-            method: 'get',
-            url: `http://3.35.22.137/api/music/list?id=${previousMusicId}&track=${track}`,
-        })
-        .then((response) => {
-            if(response.status === 200) {                
-                setNextMusicId(response.data.nextMusicId);
-                setPreviousMusicId(response.data.previousMusicId);
-                fetchMusicList(response);
-            }
-        });
-    }
 
     const setMusicObj = (e) => {
         const {value, name} = e.target;
@@ -160,8 +162,10 @@ function EditMusicView({history}) {
         })
         .then((response) => {
             if(response.status === 200) {
-                setNextMusicId(response.data.nextMusicId);
-                setPreviousMusicId(response.data.previousMusicId);
+                const findedPaging = response.data.paging;
+                setPaging({
+                    ...findedPaging
+                });
                 fetchMusicList(response);
             }
         });
